@@ -2,12 +2,15 @@ import requests
 import os
 import smtplib
 from email.mime.text import MIMEText
+import openai
 
 # Variables de entorno
 API_KEY = os.environ.get("NEWS_API_KEY")
 EMAIL_USER = os.environ.get("EMAIL_USER")  # remitente
 EMAIL_PASS = os.environ.get("EMAIL_PASS")
 EMAIL_TO = os.environ.get("EMAIL_TO")      # receptor
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+openai.api_key = OPENAI_API_KEY
 
 # Temas a buscar
 topics = [
@@ -47,11 +50,31 @@ for topic in topics:
             link = article["url"]
             source = article["source"]["name"]
 
-            # Cada noticia como <li> clicable
+            # Obtener la descripción original de la noticia
+            description = article.get("description") or ""
+
+            # Generar resumen de 2-3 líneas usando GPT
+            if description:
+                prompt = f"Resume en 2-3 líneas esta noticia para una newsletter profesional: {description}"
+                try:
+                    response_ai = openai.ChatCompletion.create(
+                        model="gpt-3.5-turbo",
+                        messages=[{"role":"user","content":prompt}],
+                        temperature=0.5,
+                        max_tokens=60
+                    )
+                    resumen = response_ai.choices[0].message.content.strip()
+                except Exception as e:
+                    resumen = description  # fallback si hay error
+            else:
+                resumen = "No hay descripción disponible."
+
+            # Añadir noticia al HTML de la newsletter
             newsletter += f"""
             <li>
                 <a href="{link}"><b>{title}</b></a><br>
-                <small>{source}</small>
+                <small>{source}</small><br>
+                <em>{resumen}</em>
             </li>
             """
 
