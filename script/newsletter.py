@@ -1,0 +1,1 @@
+print("Newsletter script running")
