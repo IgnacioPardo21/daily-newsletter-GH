@@ -10,8 +10,6 @@ EMAIL_USER = os.environ.get("EMAIL_USER")
 EMAIL_PASS = os.environ.get("EMAIL_PASS")
 EMAIL_TO = os.environ.get("EMAIL_TO")
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
-FINNHUB_API_KEY = os.environ.get("FINNHUB_API_KEY")
-WEATHER_API_KEY = os.environ.get("WEATHER_API_KEY")  # OpenWeatherMap
 
 openai.api_key = OPENAI_API_KEY
 
@@ -22,37 +20,6 @@ if os.path.exists(sent_urls_file):
         sent_urls = set(line.strip() for line in f.readlines())
 else:
     sent_urls = set()
-
-# --- Datos de mercado usando Finnhub ---
-symbols = {
-    "IBEX 35": "^IBEX",
-    "NASDAQ": "^IXIC",
-    "DOW": "^DJI"
-}
-
-ibex_summary = []
-for name, symbol in symbols.items():
-    try:
-        url = f"https://finnhub.io/api/v1/quote?symbol={symbol}&token={FINNHUB_API_KEY}"
-        response = requests.get(url)
-        data = response.json()
-        price = data.get("c", 0)
-        change_pct = data.get("dp", 0)
-        ibex_summary.append(f"{name}: {change_pct:+.2f}% ({price})")
-    except:
-        ibex_summary.append(f"{name}: no disponible")
-
-ibex_summary_str = ", ".join(ibex_summary)
-
-# --- Clima de Valencia ---
-try:
-    weather_response = requests.get(
-        f"https://api.openweathermap.org/data/2.5/weather?q=Valencia,ES&units=metric&appid={WEATHER_API_KEY}"
-    )
-    weather_data = weather_response.json()
-    clima_valencia = f"{weather_data['weather'][0]['description'].title()}, {weather_data['main']['temp']}°C"
-except:
-    clima_valencia = "No se pudo obtener el clima."
 
 # Temas a buscar
 topics = [
@@ -74,13 +41,6 @@ newsletter = f"""
 <body style="font-family:Arial, sans-serif; line-height:1.4; color:#333;">
 <h1 style="color:#1a73e8;">☕ Buenos días</h1>
 <p>Aquí tienes tu resumen diario de noticias.</p>
-<hr>
-
-<h2 style="color:#ff5722;">📈 Mercados</h2>
-<p>{ibex_summary_str}</p>
-
-<h2 style="color:#03a9f4;">🌤 Clima Valencia</h2>
-<p>{clima_valencia}</p>
 <hr>
 """
 
