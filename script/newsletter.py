@@ -12,6 +12,14 @@ EMAIL_TO = os.environ.get("EMAIL_TO")      # receptor
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 openai.api_key = OPENAI_API_KEY
 
+# Archivo para controlar duplicados
+sent_urls_file = "data/sent_urls.txt"
+if os.path.exists(sent_urls_file):
+    with open(sent_urls_file, "r") as f:
+        sent_urls = set(line.strip() for line in f.readlines())
+else:
+    sent_urls = set()
+
 # Temas a buscar
 topics = [
     "real estate España",
@@ -49,27 +57,28 @@ for topic in topics:
             title = article["title"]
             link = article["url"]
             source = article["source"]["name"]
-
-            # Obtener la descripción original de la noticia
             description = article.get("description") or ""
 
-            # Generar resumen de 2-3 líneas usando GPT
-            if description:
-                prompt = f"Resume en 2-3 líneas esta noticia para una newsletter profesional: {description}"
-                try:
-                    response_ai = openai.ChatCompletion.create(
-                        model="gpt-3.5-turbo",
-                        messages=[{"role":"user","content":prompt}],
-                        temperature=0.5,
-                        max_tokens=60
-                    )
-                    resumen = response_ai.choices[0].message.content.strip()
-                except Exception as e:
-                    resumen = description  # fallback si hay error
-            else:
-                resumen = "No hay descripción disponible."
+            # Filtrar duplicados y noticias irrelevantes
+            if link in sent_urls:
+                continue
+            if len(description) < 50:  # menos de 50 caracteres → irrelevante
+                continue
 
-            # Añadir noticia al HTML de la newsletter
+            # Generar resumen con IA
+            try:
+                prompt = f"Resume en 2-3 líneas esta noticia para una newsletter profesional: {description}"
+                response_ai = openai.ChatCompletion.create(
+                    model="gpt-3.5-turbo",
+                    messages=[{"role":"user","content":prompt}],
+                    temperature=0.5,
+                    max_tokens=60
+                )
+                resumen = response_ai.choices[0].message.content.strip()
+            except:
+                resumen = description  # fallback si hay error
+
+            # Añadir al newsletter
             newsletter += f"""
             <li>
                 <a href="{link}"><b>{title}</b></a><br>
@@ -78,7 +87,10 @@ for topic in topics:
             </li>
             """
 
-    newsletter += "</ul>"  # cerrar la lista del tema
+            # Añadir a URLs enviadas
+            sent_urls.add(link)
+
+    newsletter += "</ul>"
 
 # Pie del email
 newsletter += """
@@ -99,5 +111,11 @@ server = smtplib.SMTP_SSL("smtp.gmail.com", 465)
 server.login(EMAIL_USER, EMAIL_PASS)
 server.send_message(msg)
 server.quit()
+
+# Guardar URLs enviadas hoy
+os.makedirs("data", exist_ok=True)
+with open(sent_urls_file, "w") as f:
+    for url in sent_urls:
+        f.write(url + "\n")
 
 print("Email enviado")
