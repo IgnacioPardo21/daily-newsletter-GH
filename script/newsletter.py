@@ -33,7 +33,14 @@ for topic in topics:
 
     if "articles" in data:
         for article in data["articles"][:3]:
-            newsletter += "- " + article["title"] + "\n"
+
+            title = article["title"]
+            link = article["url"]
+            source = article["source"]["name"]
+
+            newsletter += f"- {title}\n"
+            newsletter += f"  Fuente: {source}\n"
+            newsletter += f"  Leer: {link}\n\n"
 
 msg = MIMEText(newsletter)
 msg["Subject"] = "Tu newsletter diaria"
