@@ -38,7 +38,7 @@ for topic in topics:
 msg = MIMEText(newsletter)
 msg["Subject"] = "Tu newsletter diaria"
 msg["From"] = EMAIL_USER
-msg["To"] = EMAIL_USER
+msg["To"] = os.environ.get("EMAIL_TO")
 
 server = smtplib.SMTP_SSL("smtp.gmail.com", 465)
 server.login(EMAIL_USER, EMAIL_PASS)
