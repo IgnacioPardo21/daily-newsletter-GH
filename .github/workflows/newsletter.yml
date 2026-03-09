@@ -19,4 +19,6 @@ jobs:
           python-version: "3.11"
 
       - name: Ejecutar script
+        env:
+          NEWS_API_KEY: ${{ secrets.NEWS_API_KEY }}
         run: python script/newsletter.py
