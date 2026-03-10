@@ -5,7 +5,6 @@ from email.mime.text import MIMEText
 import openai
 import subprocess
 
-# Variables de entorno
 API_KEY = os.environ.get("NEWS_API_KEY")
 EMAIL_USER = os.environ.get("EMAIL_USER")
 EMAIL_PASS = os.environ.get("EMAIL_PASS")
@@ -14,7 +13,6 @@ OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 
 openai.api_key = OPENAI_API_KEY
 
-# Archivo para controlar duplicados
 sent_urls_file = "data/sent_urls.txt"
 
 if os.path.exists(sent_urls_file):
@@ -23,7 +21,6 @@ if os.path.exists(sent_urls_file):
 else:
     sent_urls = set()
 
-# Temas a buscar
 topics = [
     "real estate España",
     "bolsa",
@@ -37,126 +34,165 @@ topics = [
     "innovación empresarial España"
 ]
 
-# Cabecera del email
-newsletter = """
-<html>
-<body style="font-family:Arial, sans-serif; line-height:1.4; color:#333;">
-<h1 style="color:#000;">☕ Buenos días</h1>
-<p>Aquí tienes tu resumen diario de noticias.</p>
-<hr>
-"""
+candidates = []
 
-# Recorremos los temas
 for topic in topics:
 
-    url = f"https://newsapi.org/v2/everything?q={topic}&language=es&pageSize=5&sortBy=publishedAt&apiKey={API_KEY}"
+    url = f"https://newsapi.org/v2/everything?q={topic}&language=es&pageSize=10&sortBy=publishedAt&apiKey={API_KEY}"
 
     response = requests.get(url)
     data = response.json()
 
-    newsletter += f"<h2 style='color:#000;'>📌 {topic.title()}</h2><ul>"
+    if "articles" not in data:
+        continue
 
-    if "articles" in data:
-        for article in data["articles"]:
+    for article in data["articles"]:
 
-            title = article["title"]
-            link = article["url"]
-            source = article["source"]["name"]
-            description = article.get("description") or ""
+        link = article["url"]
+        title = article["title"]
+        source = article["source"]["name"]
+        description = article.get("description") or ""
 
-            if link in sent_urls:
-                continue
+        if link in sent_urls:
+            continue
 
-            if len(description) < 50:
-                continue
+        if len(description) < 50:
+            continue
 
-            # IA decide si es relevante
-            try:
-                relevance_prompt = f"""
-                Esta noticia es relevante para una newsletter informativa diaria?
-                Responde SOLO SI o NO.
+        candidates.append({
+            "title": title,
+            "link": link,
+            "source": source,
+            "description": description
+        })
 
-                Titular: {title}
-                Descripción: {description}
-                """
+# Si no hay noticias
+if len(candidates) == 0:
+    print("No hay noticias nuevas")
+    exit()
 
-                relevance = openai.ChatCompletion.create(
-                    model="gpt-3.5-turbo",
-                    messages=[{"role": "user", "content": relevance_prompt}],
-                    temperature=0,
-                    max_tokens=5
-                )
+# PREPARAR TEXTO PARA IA
+news_text = ""
 
-                decision = relevance.choices[0].message.content.strip().upper()
+for i, c in enumerate(candidates):
 
-                if "NO" in decision:
-                    continue
+    news_text += f"""
+Noticia {i}
 
-            except:
-                pass
+Título: {c['title']}
+Descripción: {c['description']}
+"""
 
-            # Generar resumen con IA
-            try:
-                prompt = f"Resume en 2-3 líneas esta noticia para una newsletter profesional: {description}"
+prompt = f"""
+Selecciona las 15 noticias MÁS IMPORTANTES para una newsletter diaria.
 
-                response_ai = openai.ChatCompletion.create(
-                    model="gpt-3.5-turbo",
-                    messages=[{"role": "user", "content": prompt}],
-                    temperature=0.5,
-                    max_tokens=60
-                )
+Temas prioritarios:
+real estate España
+bolsa
+pádel
+fútbol
+política España
+sucesos España
+Valencia
+tecnología
+inteligencia artificial
+innovación empresarial
 
-                resumen = response_ai.choices[0].message.content.strip()
+Devuelve SOLO los números de las noticias seleccionadas separados por coma.
 
-            except:
-                resumen = description
+Noticias:
 
-            newsletter += f"""
-            <li style="margin-bottom:10px;">
-                <a href="{link}"><b>{title}</b></a><br>
-                <small>{source}</small><br>
-                <em>{resumen}</em>
-            </li>
-            """
+{news_text}
+"""
 
-            sent_urls.add(link)
+response_ai = openai.ChatCompletion.create(
+    model="gpt-3.5-turbo",
+    messages=[{"role": "user", "content": prompt}],
+    temperature=0
+)
 
-    newsletter += "</ul>"
+selected = response_ai.choices[0].message.content
 
-# Pie del email
-newsletter += """
+indexes = []
+
+for x in selected.replace(" ", "").split(","):
+    try:
+        indexes.append(int(x))
+    except:
+        pass
+
+selected_news = [candidates[i] for i in indexes if i < len(candidates)]
+
+newsletter = """
+<html>
+<body style="font-family:Arial, sans-serif;">
+<h1 style="color:#000;">☕ Buenos días</h1>
+<p>Estas son las noticias más relevantes de hoy.</p>
 <hr>
-<p>Esta es tu newsletter automática generada desde GitHub Actions.</p>
+<ul>
+"""
+
+for news in selected_news:
+
+    try:
+
+        prompt = f"Resume esta noticia en 2 líneas: {news['description']}"
+
+        resumen = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.5,
+            max_tokens=60
+        )
+
+        resumen = resumen.choices[0].message.content.strip()
+
+    except:
+        resumen = news["description"]
+
+    newsletter += f"""
+<li>
+<a href="{news['link']}"><b>{news['title']}</b></a><br>
+<small>{news['source']}</small><br>
+{resumen}
+</li><br>
+"""
+
+    sent_urls.add(news["link"])
+
+newsletter += """
+</ul>
+<hr>
+<p>Newsletter automática.</p>
 </body>
 </html>
 """
 
-# Preparar email
 msg = MIMEText(newsletter, "html")
 msg["Subject"] = "Tu newsletter diaria"
 msg["From"] = EMAIL_USER
 msg["To"] = EMAIL_TO
 
-# Enviar email
 server = smtplib.SMTP_SSL("smtp.gmail.com", 465)
 server.login(EMAIL_USER, EMAIL_PASS)
 server.send_message(msg)
 server.quit()
 
-# Guardar URLs enviadas
 os.makedirs("data", exist_ok=True)
 
 with open(sent_urls_file, "w") as f:
     for url in sent_urls:
         f.write(url + "\n")
 
-# Hacer commit automático para persistir duplicados
 try:
+
     subprocess.run(["git", "config", "--global", "user.email", "bot@github.com"])
     subprocess.run(["git", "config", "--global", "user.name", "github-actions"])
+
     subprocess.run(["git", "add", sent_urls_file])
     subprocess.run(["git", "commit", "-m", "update sent urls"])
     subprocess.run(["git", "push"])
+
 except:
     pass
 
