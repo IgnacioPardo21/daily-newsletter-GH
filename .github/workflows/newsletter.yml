@@ -5,6 +5,9 @@ on:
     - cron: "0 6 * * *"
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   run-newsletter:
     runs-on: ubuntu-latest
@@ -20,6 +23,11 @@ jobs:
 
       - name: Instalar dependencias
         run: pip install requests openai
+
+      - name: Configurar git
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
 
       - name: Ejecutar script
         env:
