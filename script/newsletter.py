@@ -39,7 +39,7 @@ topics = [
 newsletter = f"""
 <html>
 <body style="font-family:Arial, sans-serif; line-height:1.4; color:#333;">
-<h1 style="color:#1a73e8;">☕ Buenos días</h1>
+<h1 style="color:#000;">☕ Buenos días</h1>
 <p>Aquí tienes tu resumen diario de noticias.</p>
 <hr>
 """
@@ -50,7 +50,7 @@ for topic in topics:
     response = requests.get(url)
     data = response.json()
 
-    newsletter += f"<h2 style='color:#4caf50;'>📌 {topic.title()}</h2><ul>"
+    newsletter += f"<h2 style='color:#000;'>📌 {topic.title()}</h2><ul>"
 
     if "articles" in data:
         for article in data["articles"][:3]:
