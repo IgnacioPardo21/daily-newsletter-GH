@@ -1,181 +1,256 @@
-📰 Newsletter automática con IA
+# 📰 AI Daily Newsletter
 
-Este proyecto genera y envía automáticamente una newsletter diaria de noticias personalizadas, utilizando:
+![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)
+![Automation](https://img.shields.io/badge/Automation-GitHub%20Actions-black)
+![AI](https://img.shields.io/badge/AI-OpenAI-green)
+![NewsAPI](https://img.shields.io/badge/Data-NewsAPI-orange)
+![Status](https://img.shields.io/badge/Status-Active-success)
 
-agregación de noticias mediante NewsAPI
+Sistema automatizado que **recopila, filtra y envía una newsletter diaria personalizada** utilizando **inteligencia artificial y automatización en la nube**.
 
-filtrado y resumen con IA
+Cada mañana recibirás un email con **las noticias más relevantes del día**, resumidas por IA y seleccionadas según tus intereses.
 
-envío automático por email
+---
 
-ejecución programada con GitHub Actions
+# 🚀 Qué hace este proyecto
 
-El sistema busca noticias sobre temas definidos, filtra duplicados, usa IA para seleccionar contenido relevante y envía un email diario con un resumen claro y rápido de leer.
+El sistema:
 
-⚙️ Cómo funciona
+1. Busca noticias recientes en internet
+2. Filtra las noticias realmente relevantes con IA
+3. Elimina duplicados de días anteriores
+4. Genera un resumen corto de cada noticia
+5. Construye una newsletter clara y rápida de leer
+6. Envía automáticamente el email
+7. Guarda las noticias enviadas para evitar repetirlas
+
+Todo esto se ejecuta **automáticamente cada día** mediante **GitHub Actions**.
+
+---
+
+# 🧠 Temas de noticias
+
+La IA prioriza noticias relacionadas con:
+
+- 🏢 Real Estate en España  
+- 📈 Bolsa y mercados financieros  
+- 🧠 Inteligencia Artificial  
+- 💻 Tecnología  
+- 🚀 Innovación empresarial  
+- ⚽ Fútbol  
+- 🎾 Pádel  
+- 🏛️ Política española  
+- 🚨 Sucesos en España  
+- 📍 Sucesos en Valencia  
+
+La IA selecciona **las 15 noticias más relevantes del día**.
+
+---
+
+# ⚙️ Arquitectura del sistema
 
 El flujo del sistema es el siguiente:
 
-Búsqueda de noticias
-
-El script consulta la API de noticias y obtiene artículos recientes sobre temas definidos por el usuario.
-
-Ejemplo de temas actuales:
-
-Real Estate en España
-
-Bolsa y economía
-
-Pádel
-
-Fútbol
-
-Política española
-
-Sucesos en España
-
-Sucesos en Valencia
-
-Tecnología
-
-Inteligencia Artificial
-
-Innovación empresarial
-
+```
+NewsAPI
+   │
+   ▼
+Recopilación de noticias
+   │
+   ▼
+Filtro IA (relevancia)
+   │
+   ▼
 Eliminación de duplicados
+   │
+   ▼
+Generación de resumen con IA
+   │
+   ▼
+Construcción del email
+   │
+   ▼
+Envío por SMTP
+   │
+   ▼
+Guardado de URLs enviadas
+```
 
-El sistema guarda todas las URLs ya enviadas en el archivo:
+---
 
+# 🔎 Cómo funciona paso a paso
+
+## 1️⃣ Recopilación de noticias
+
+El script consulta **NewsAPI** para obtener artículos recientes sobre los temas definidos.
+
+---
+
+## 2️⃣ Eliminación de duplicados
+
+El sistema guarda las URLs enviadas en:
+
+```
 data/sent_urls.txt
+```
 
-Antes de incluir una noticia en la newsletter, el script comprueba si ya ha sido enviada anteriormente.
+Antes de enviar una noticia, comprueba si ya fue enviada anteriormente.
 
-Si ya existe en el archivo:
+Si la URL ya existe en el archivo:
 
-se descarta automáticamente
+```
+la noticia se descarta automáticamente
+```
 
-Esto evita recibir la misma noticia en días diferentes.
+---
 
-Filtrado de relevancia con IA
+## 3️⃣ Selección inteligente con IA
 
-Cada noticia pasa por un filtro de IA que responde a la pregunta:
-
-¿Esta noticia es relevante para una newsletter diaria?
+Cada noticia se analiza con IA para decidir si es **realmente relevante**.
 
 La IA responde únicamente:
 
+```
 SI
 NO
+```
 
-Si la respuesta es NO, la noticia se descarta.
+Solo las noticias con **SI** pasan al siguiente paso.
 
-Generación de resumen
+---
 
-Para cada noticia relevante, la IA genera un resumen breve de 2-3 líneas, pensado para lectura rápida en email.
+## 4️⃣ Generación del resumen
 
-Construcción de la newsletter
+La IA genera un resumen breve de **2-3 líneas**, optimizado para lectura rápida.
 
-El email final incluye:
+---
 
-saludo inicial
+## 5️⃣ Construcción de la newsletter
 
-noticias agrupadas por tema
+El sistema genera un email con este formato:
 
-titular
-
-fuente
-
-resumen generado por IA
-
-enlace a la noticia completa
-
-Ejemplo de estructura:
-
+```
 ☕ Buenos días
 
+Aquí tienes tu resumen diario de noticias.
+
 📌 Tecnología
-- Titular
-- Fuente
-- Resumen IA
+- Apple prepara su iPhone plegable
+  Actualidad iPhone
+  Apple avanza en el desarrollo de su primer dispositivo plegable con mejoras en diseño y pantalla.
 
 📌 Bolsa
-- Titular
-- Fuente
-- Resumen IA
+- Ana Botín compra acciones de Santander
+  Europa Press
+  La presidenta del banco ha adquirido acciones por valor cercano a tres millones de euros.
+```
 
-Envío automático por email
+---
 
-El email se envía mediante SMTP usando Gmail.
+## 6️⃣ Envío automático por email
 
-Persistencia de noticias enviadas
+El email se envía mediante **SMTP utilizando Gmail**.
 
-Después del envío, el sistema:
+---
 
-actualiza data/sent_urls.txt
+## 7️⃣ Guardado de noticias enviadas
 
-hace commit automáticamente
+Después de enviar la newsletter:
 
-sube el archivo al repositorio
+1. se actualiza `sent_urls.txt`
+2. se hace commit automático
+3. se sube el archivo al repositorio
 
-Esto permite que el sistema recuerde qué noticias ya se enviaron, incluso en ejecuciones futuras.
+Esto permite **recordar qué noticias ya se enviaron**.
 
-🕒 Automatización
+---
 
-La ejecución automática se realiza mediante GitHub Actions.
+# 🕒 Automatización diaria
 
-Ejemplo de programación diaria:
+La ejecución automática se realiza con **GitHub Actions**.
 
+Ejemplo del cron job:
+
+```yaml
 schedule:
   - cron: "0 6 * * *"
+```
 
-GitHub ejecuta el script todos los días a las 06:00 UTC, aproximadamente 07:00 en España.
+GitHub ejecuta el script todos los días a las:
 
-También se puede ejecutar manualmente desde la pestaña Actions del repositorio.
+```
+06:00 UTC
+≈ 07:00 en España
+```
 
-🔐 Variables necesarias
+También se puede ejecutar manualmente desde:
 
-El proyecto utiliza Secrets de GitHub para almacenar credenciales.
+```
+GitHub → Actions → Run workflow
+```
 
-Debes configurar los siguientes secretos en:
+---
 
+# 🔐 Variables necesarias
+
+Debes configurar estos **Secrets en GitHub**:
+
+```
 Repository → Settings → Secrets → Actions
+```
 
 Variables necesarias:
 
+```
 NEWS_API_KEY
 OPENAI_API_KEY
 EMAIL_USER
 EMAIL_PASS
 EMAIL_TO
-Descripción
+```
 
-NEWS_API_KEY
+---
 
-API Key de NewsAPI.
+# 📄 Descripción de variables
+
+### NEWS_API_KEY
+
+API de noticias utilizada para recopilar artículos.
 
 https://newsapi.org
 
-OPENAI_API_KEY
+---
 
-API Key para utilizar IA para:
+### OPENAI_API_KEY
 
-filtrado de relevancia
+Se utiliza para:
 
-generación de resúmenes
+- filtrar noticias relevantes
+- generar resúmenes automáticos
 
-EMAIL_USER
+---
+
+### EMAIL_USER
 
 Correo desde el que se envía la newsletter.
 
-EMAIL_PASS
+---
 
-Contraseña de aplicación del correo (por ejemplo Gmail App Password).
+### EMAIL_PASS
 
-EMAIL_TO
+Contraseña de aplicación del correo (por ejemplo **Gmail App Password**).
+
+---
+
+### EMAIL_TO
 
 Correo destinatario de la newsletter.
 
-📂 Estructura del proyecto
+---
+
+# 📂 Estructura del proyecto
+
+```
 daily-newsletter
 
 script/
@@ -186,61 +261,74 @@ data/
 
 .github/workflows/
    newsletter.yml
-📜 Dependencias
+```
 
-El proyecto utiliza Python.
+---
 
-Principales librerías:
+# 📜 Dependencias
 
+El proyecto utiliza **Python**.
+
+Librerías principales:
+
+```
 requests
 openai
 smtplib
+```
 
 En GitHub Actions se instalan con:
 
+```
 pip install requests openai==0.28
-✉️ Ejemplo de email generado
+```
+
+---
+
+# 📬 Ejemplo de newsletter
+
+```
 ☕ Buenos días
 
 Aquí tienes tu resumen diario de noticias.
 
-📌 Tecnología
-- Apple prepara su iPhone plegable
-  Actualidad iPhone
-  Apple avanza en el desarrollo de su primer dispositivo plegable, que podría llegar en los próximos años con nuevas mejoras en diseño y pantalla.
+📌 Inteligencia Artificial
+- OpenAI lanza nuevas herramientas para empresas
+  TechCrunch
+  La compañía presenta nuevas capacidades orientadas a empresas para integrar modelos de IA en procesos corporativos.
 
-📌 Bolsa
-- Ana Botín compra acciones de Santander
-  Europa Press
-  La presidenta del banco ha adquirido acciones por valor cercano a tres millones de euros.
-🚀 Posibles mejoras futuras
+📌 Real Estate
+- El mercado inmobiliario en España sigue creciendo
+  El Economista
+  La demanda de vivienda continúa aumentando impulsada por la inversión extranjera y la escasez de oferta.
+```
 
-El proyecto puede evolucionar fácilmente hacia:
+---
 
-selección automática de las 15 noticias más importantes del día
+# 🔮 Posibles mejoras futuras
 
-ranking por relevancia
+Este proyecto puede evolucionar hacia:
 
-eliminación de duplicados por titular
+- 📊 ranking automático de noticias por importancia  
+- 🌐 versión web de la newsletter  
+- 👥 envío a múltiples suscriptores  
+- 📱 app móvil  
+- 📈 dashboard de métricas  
+- 🧠 análisis de tendencias  
 
-generación de titular editorial
+---
 
-versión web de la newsletter
-
-envío a múltiples suscriptores
-
-dashboard de control
-
-🧠 Objetivo del proyecto
+# 🧠 Objetivo del proyecto
 
 Este proyecto demuestra cómo combinar:
 
-agregación de información
+- agregación de información
+- inteligencia artificial
+- automatización
+- infraestructura cloud ligera
 
-automatización
+para construir un **sistema automático de curación de noticias** que entrega **información relevante cada mañana** sin intervención manual.
 
-inteligencia artificial
+---
 
-infraestructura cloud ligera
-
-para construir un sistema de curación automática de contenido.
+⭐ Si te gusta el proyecto, puedes mejorarlo añadiendo más fuentes, más categorías o creando una versión pública de la newsletter.
