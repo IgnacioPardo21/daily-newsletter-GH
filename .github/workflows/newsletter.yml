@@ -22,7 +22,7 @@ jobs:
           python-version: "3.11"
 
       - name: Instalar dependencias
-        run: pip install requests openai
+        run: pip install requests openai==0.28
 
       - name: Configurar git
         run: |
